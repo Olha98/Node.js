@@ -6,9 +6,12 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "install": "^0.13.0",
+    "morgan": "^1.10.0",
     "npm": "^6.14.8",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -19,7 +22,8 @@
     "dev": "nodemon --inspect index.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node server.js"
   },
   "eslintConfig": {
     "extends": "react-app"
