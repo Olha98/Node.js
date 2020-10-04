@@ -23,13 +23,13 @@ start() {
 	}
 
 	initMiddlewares(){
-		this.server.use(express.join());
+		this.server.use(express.json());
 		this.server.use(cors({origin:"http://localhost:3000"}))
 	}
 
 
 	initRouters(){
-this.server.use('contacts', contactRouter)
+this.server.use('/contacts', contactRouter)
 	}
 
 

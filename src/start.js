@@ -1,4 +1,4 @@
-const {ContactsServer} = require('./server');
+const {contactsServer} = require('./server');
 
-console.log(ContactsServer,"ContactsServer")
-ContactsServer.start()
+contactsServer.start()
+
