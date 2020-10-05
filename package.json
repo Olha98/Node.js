@@ -20,12 +20,11 @@
     "yargs": "^16.0.3"
   },
   "scripts": {
-    "start": "node start.js",
-    "dev": "nodemon --inspect index.js",
+    "start": "node src/start.js",
+    "dev": "nodemon --inspect start.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "server": "node server.js"
   },
   "eslintConfig": {
     "extends": "react-app"
