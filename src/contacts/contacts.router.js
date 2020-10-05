@@ -11,14 +11,14 @@ contactRouter.get(
 
 contactRouter.post(
   "/",
-  ContactsController.validateCreateContact.bind(ContactsController),
-  ContactsController.createContact.bind(ContactsController)
+  ContactsController.validateAddContact.bind(ContactsController),
+  ContactsController.addContact.bind(ContactsController)
 );
 
 contactRouter.patch(
   "/:contactId",
-  ContactsController.validateCreateContact.bind(ContactsController),
-  ContactsController.addContact.bind(ContactsController)
+  ContactsController.validateUpdateContact.bind(ContactsController),
+  ContactsController.updateContact.bind(ContactsController)
 );
 contactRouter.delete(
   "/:contactId",
