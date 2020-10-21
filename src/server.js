@@ -40,6 +40,8 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
       await mongoose.connect(process.env.MONGO_DB_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useCreateIndex: true,
+        useNewUrlParser: true
       });
       console.log('Database has been started');
     } catch (error) {
