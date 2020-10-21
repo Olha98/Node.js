@@ -1,139 +1,47 @@
-const Joi = require("joi");
+const contacts = require("./contacts");
+const errCather = require("../utils/errCatcher")
 
-const contacts = [
-  {
-    id: 1,
-    name: "Gichard",
-    email: "gfghf@gmail.com",
-    password: "123456gg",
-  },
-];
+exports.getContacts = errCather(async (req, res, next) => {
+    const contactsList = await contacts.listContacts();
+    return res.status(200).json(contactsList);
+});
 
-class ContactController {
-
-
-  listContacts(req, res, next) {
-    return res.json(contacts);
-  }
-
-  addContact(req, res, next) {
-    const newContact = {
-      ...req.body,
-      id: contacts.length + 1,
-    };
-
-    contacts.push(newContact);
-    return res.status(200).send(contacts);
-  }
-
-  getById(req, res, next) {
-    const targetContactsIndex = this.findContactIndexById(
-      res,
-      req.params.contactId
-    );
-
-    if (targetContactsIndex === undefined) {
-      return res.status(404).send("Not found");
+exports.getContactsById = errCather(async (req, res, next) => {
+    const { contactId } = req.params;
+    const contact = await contacts.getContactById(contactId);
+    if (contact) {
+      return res.status(200).json(contact);
     }
+    res.status(404).json({ message: "Not found" });
+});
 
-    contacts[targetContactsIndex] = {
-      ...contacts[targetContactsIndex],
-    };
+exports.addContacts = errCather(async (req, res, next) => {
+    const { name, email, phone } = req.body;
 
-    return res.status(200).send(contacts[targetContactsIndex]);
-  }
-
-  async updateContact(req, res, next) {
-    try {
-      const targetContactsIndex = this.findContactIndexById(
-        res,
-        req.params.contactId
-      );
-
-      if (targetContactsIndex === undefined) {
-        return res.status(400).send("Missing required name field");
-      }
-
-      contacts[targetContactsIndex] = {
-        ...contacts[targetContactsIndex],
-        ...req.body,
-      };
-
-      return res.status(200).send(contacts);
-    } catch (error) {
-      next(error);
+    if (name.length) {
+      const contactsAdd = await contacts.addContact(name, email, phone);
+      return res.status(201).json(contactsAdd);
     }
-  }
+    return res.status(400).json({ message: "missing required name field" });
+});
 
-  async removeContact(req, res, next) {
-    try {
-      const targetContactsIndex = this.findContactIndexById(
-        res,
-        req.params.contactId
-      );
-
-      if (targetContactsIndex === -1) {
-        throw new NotFoundError("Not found contact");
-      }
-
-      contacts.splice(targetContactsIndex, 1);
-      return res.status(200).send(contacts);
-    } catch (error) {
-      next(error);
+exports.removeContact = errCather(async (req, res, next) => {
+    const { contactId } = req.params;
+    const id = await contacts.getContactById(contactId);
+    if (id) {
+      await contacts.removeContact(contactId);
+        return res.status(204).send();
     }
-  }
+    return res.status(404).json({ message: "Not found" });
+});
 
-   findContactIndexById(res, contactId) {
-   
-      const id = parseInt(contactId);
+exports.updateContact = errCather(async (req, res, next) => {
+    const { contactId } = req.params;
+    const contact = await contacts.getContactById(contactId);
 
-      const targetContactIndex = contacts.findIndex(
-        (contact) => contact.id === id
-      );
-  
-      if (targetContactIndex === -1) {
-        throw new NotFoundError("Not found contact");
-      }
-  
-      return targetContactIndex;
-  }
-
-  validateAddContact(req, res, next) {
-    const createContactRules = Joi.object({
-      name: Joi.string().required(),
-      email: Joi.string().required(),
-      password: Joi.string().required(),
-    });
-
-    const result = createContactRules.validate(req.body);
-    if (result.error) {
-      return res.status(400).send(result.error);
+      if (!contact) {
+    return res.status(404).json({ message: "Not found" });
     }
-    next();
-  }
-
-  validateUpdateContact(req, res, next) {
-    const updateContactRules = Joi.object({
-      name: Joi.string(),
-      email: Joi.string(),
-    });
-
-    const result = updateContactRules.validate(req.body);
-    if (result.error) {
-      return res.status(400).send(result.error);
-    }
-
-    next();
-  }
-}
-
-class NotFoundError extends Error {
-  constructor(message) {
-    super(message);
-
-    this.status = 404;
-    delete this.stack;
-  }
-}
-
-module.exports = new ContactController();
+    const updatedContact = await contacts.updateContact(contactId, req.body);
+    return res.status(200).send(updatedContact);
+});

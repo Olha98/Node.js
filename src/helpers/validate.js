@@ -4,7 +4,6 @@
 	  if (validationResult.error) {
 		return res.status(400).send(validationResult.error);
 	  }
-  
 	  next();
 	};
   };

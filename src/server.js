@@ -1,41 +1,50 @@
 const express = require("express");
 const cors = require("cors");
-const contactRouter = require("./contacts/contacts.router");
+const fs = require("fs").promises;
+const contactsRouter = require("./contacts/contacts.router");
+const morgan = require("morgan");
+const dotenv = require('dotenv');
 
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../src/.env") });
+dotenv.config();
+const PORT = 3000
 
-class ContactsServer {
-  constructor() {
-    this.server = null;
-  }
+class CrudServer {
+    constructor() {
+        this.app = null
+    }
+    start() {
+        this.initServer();
+        this.initMiddlewares();
+        this.initRouters();
+        this.initErrorHandling();
+        this.startListening();
+    }
 
-  start() {
-    this.initServer();
-    this.initMiddlewares();
-    this.initRouters();
-    this.startListening();
-  }
+    initServer() {
+        this.app = express();
+    }
+    initMiddlewares() {
+        this.app.use(express.json());
+        this.app.use(cors({ origin: "http://localhost:3000" }));
+        this.app.use(morgan("combined"));
+    }
 
-  initServer() {
-    this.server = express();
-  }
+    initRouters() {
+        this.app.use("/contacts", contactsRouter);
+        this.app.use((req, res) => res.status(404).json({ message: 'Not found, try to move on correct adress' }));
 
-  initMiddlewares() {
-    this.server.use(express.json());
-    this.server.use(cors({ origin: "http://localhost:3000" }));
-  }
+    }
 
-  initRouters() {
-    this.server.use("/contacts", contactRouter);
-  }
-
-  startListening() {
-    this.server.listen(process.env.PORT, () => {
-      console.log("Server started");
-    });
-  }
+    initErrorHandling() {
+        this.app.use((err, req, res, next) => {
+            return res.status(err.status || 500).send(err.message);
+        })
 }
 
-exports.ContactsServer = ContactsServer;
-exports.contactsServer = new ContactsServer();
+    startListening() {
+        this.app.listen(PORT, () => console.log(`server started on port ${PORT}`));
+    }
+}
+
+exports.CrudServer = CrudServer;
+exports.crudServer = new CrudServer();

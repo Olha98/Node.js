@@ -1,28 +1,37 @@
-const express = require("express");
+const { Router } = require("express");
 const ContactsController = require("./contacts.controller");
-const contactRouter = express.Router();
+const { validate } = require("../helpers/validate");
+const Joi = require("joi");
 
-contactRouter.get("/", ContactsController.listContacts);
 
-contactRouter.get(
-  "/:contactId",
-  ContactsController.getById.bind(ContactsController)
-);
+const contactsRouter = Router();
+const {
+  getContacts,
+  getContactsById,
+  addContacts,
+  removeContact,
+  updateContact
+} = ContactsController;
 
-contactRouter.post(
-  "/",
-  ContactsController.validateAddContact.bind(ContactsController),
-  ContactsController.addContact.bind(ContactsController)
-);
+const addContactsSchema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().required()
+});
 
-contactRouter.patch(
-  "/:contactId",
-  ContactsController.validateUpdateContact.bind(ContactsController),
-  ContactsController.updateContact.bind(ContactsController)
-);
-contactRouter.delete(
-  "/:contactId",
-  ContactsController.removeContact.bind(ContactsController)
-);
+const updatedContactSchema = Joi.object({
+    name: Joi.string(),
+    email: Joi.string().email(),
+    phone: Joi.string()
+});
 
-module.exports = contactRouter;
+contactsRouter.get("/", getContacts);
+contactsRouter.get("/:contactId", getContactsById);
+
+contactsRouter.post("/", validate(addContactsSchema), addContacts);
+
+contactsRouter.delete("/:contactId", removeContact);
+
+contactsRouter.patch("/:contactId", validate(updatedContactSchema), updateContact);
+
+module.exports = contactsRouter;
