@@ -1,19 +1,12 @@
 const Joi = require("joi");
 
-const contacts = [
-  {
-    id: 1,
-    name: "Gichard",
-    email: "gfghf@gmail.com",
-    password: "123456gg",
-  },
-];
+
 
 class ContactController {
 
-
   listContacts(req, res, next) {
-    return res.json(contacts);
+
+    return 
   }
 
   addContact(req, res, next) {

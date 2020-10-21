@@ -1,19 +1,23 @@
-const express = require("express");
-const cors = require("cors");
-const contactRouter = require("./contacts/contacts.router");
+const express = require('express');
+const cors = require('cors');
+// const contactRouter = require('./contacts/contacts.router');
+const authRouter = require('./auth/auth.router');
+const mongoose = require('mongoose');
 
-const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../src/.env") });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
 
-class ContactsServer {
+ class AuthServer {
   constructor() {
     this.server = null;
   }
 
-  start() {
+  async start() {
     this.initServer();
     this.initMiddlewares();
     this.initRouters();
+    await this.initDataBase();
+    this.initErrorHandling();
     this.startListening();
   }
 
@@ -23,19 +27,40 @@ class ContactsServer {
 
   initMiddlewares() {
     this.server.use(express.json());
-    this.server.use(cors({ origin: "http://localhost:3000" }));
+    this.server.use(cors({ origin: 'http://localhost:3000' }));
   }
 
   initRouters() {
-    this.server.use("/contacts", contactRouter);
+    // this.server.use('/contacts', contactRouter);
+    this.server.use('/auth', authRouter)
+  }
+
+  async initDataBase() {
+    try {
+      await mongoose.connect(process.env.MONGO_DB_URL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log('Database has been started');
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+  }
+
+  initErrorHandling() {
+    this.server.use((err, req, res, next) => {
+      return res.status(err.status || 500).send(err.message);
+    });
   }
 
   startListening() {
     this.server.listen(process.env.PORT, () => {
-      console.log("Server started");
+      console.log('Server started');
     });
   }
-}
+};
 
-exports.ContactsServer = ContactsServer;
-exports.contactsServer = new ContactsServer();
+
+exports.authServer = new AuthServer();
+

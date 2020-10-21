@@ -1,4 +1,3 @@
-const {contactsServer} = require('./server');
-
-contactsServer.start()
+const {authServer} = require('../src/server');
+authServer.start()
 
