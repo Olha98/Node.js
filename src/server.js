@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 // const contactRouter = require('./contacts/contacts.router');
+const cookieParser = require('cookie-parser')
 const authRouter = require('./auth/auth.router');
+const usersRouter = require('./users/users.router');
 const mongoose = require('mongoose');
 
 const path = require('path');
@@ -28,11 +30,13 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
   initMiddlewares() {
     this.server.use(express.json());
     this.server.use(cors({ origin: 'http://localhost:3000' }));
+    this.server.use(cookieParser())
   }
 
   initRouters() {
     // this.server.use('/contacts', contactRouter);
-    this.server.use('/auth', authRouter)
+    this.server.use('/auth', authRouter);
+    this.server.use('/users', usersRouter)
   }
 
   async initDataBase() {
