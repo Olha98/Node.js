@@ -1,50 +1,64 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs").promises;
-const contactsRouter = require("./contacts/contacts.router");
 const morgan = require("morgan");
-const dotenv = require('dotenv');
+const contactsRouter = require("./contacts/contacts.routers");
+const path = require("path");
+const mongoose = require("mongoose");
+const errorController = require("./helpers/errController");
+const AppError = require("./helpers/AppError");
 
-dotenv.config();
-const PORT = 3000
+require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
 
 class CrudServer {
-    constructor() {
-        this.app = null
-    }
-    start() {
-        this.initServer();
-        this.initMiddlewares();
-        this.initRouters();
-        this.initErrorHandling();
-        this.startListening();
-    }
+  async start() {
+    this.initServer();
+    this.initMiddlewares();
+    this.initRouters();
+    await this.initDataBase();
+    this.initErrorHandling();
+    this.startListening();
+  }
 
-    initServer() {
-        this.app = express();
-    }
-    initMiddlewares() {
-        this.app.use(express.json());
-        this.app.use(cors({ origin: "http://localhost:3000" }));
-        this.app.use(morgan("combined"));
-    }
+  initServer() {
+    this.app = express();
+  }
+  initMiddlewares() {
+    this.app.use(express.json());
+    this.app.use(cors({ origin: "http://localhost:3000" }));
+    this.app.use(morgan("combined"));
+  }
 
-    initRouters() {
-        this.app.use("/contacts", contactsRouter);
-        this.app.use((req, res) => res.status(404).json({ message: 'Not found, try to move on correct adress' }));
+  initRouters() {
+    this.app.use("/contacts", contactsRouter);
+  }
 
+  async initDataBase() {
+    try {
+      await mongoose.connect(process.env.MONGO_DB_URL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: true,
+        useCreateIndex: true,
+      });
+      console.log("Database has been started");
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
     }
+  }
 
-    initErrorHandling() {
-        this.app.use((err, req, res, next) => {
-            return res.status(err.status || 500).send(err.message);
-        })
+  initErrorHandling() {
+    this.app.all("*", (req, res, next) => {
+      next(new AppError(`Can't find ${req.originalUrl}`, 404));
+    });
+    this.app.use(errorController);
+  }
+
+  startListening() {
+    this.app.listen(process.env.PORT, () => {
+      console.log("Server started listening on port", process.env.PORT);
+    });
+  }
 }
 
-    startListening() {
-        this.app.listen(PORT, () => console.log(`server started on port ${PORT}`));
-    }
-}
-
-exports.CrudServer = CrudServer;
 exports.crudServer = new CrudServer();
