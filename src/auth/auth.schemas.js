@@ -11,3 +11,7 @@ exports.signInSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
+
+exports.logoutSchema = Joi.object({
+  _id: Joi.string().required(),
+});

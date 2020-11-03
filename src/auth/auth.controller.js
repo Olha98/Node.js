@@ -8,6 +8,7 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
 const { Conflict } = require('../helpers/errors/conflictError');
 const { NotFound } = require('../helpers/errors/notFoundError');
 const { ForBidden } = require('../helpers/errors/forbiddenError');
+const { Unauthorized } = require('../helpers/errors/unauthorizedError');
 
 exports.signUp = async (req, res, next) => {
   try {
@@ -59,7 +60,31 @@ exports.signIn = async (req, res, next) => {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    req.cookie("token", token, {httpOnly: true});
+    res.cookie('token', token, { httpOnly: true });
+
+    return res.status(200).send({
+      token,
+      user: {
+        email: user.email,
+        subscription: user.subscription,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  try {
+    const { _id } = req.body;
+    const findUserById = await userModel.findOne({ _id });
+
+    if (!findUserById) {
+      throw new Unauthorized('Not authorized');
+    }
+
+    console.log(req.body, 'req.body');
+    console.log(findUserById, 'findUserById');
 
     return res.status(200).send({
       token,

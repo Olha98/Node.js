@@ -7,7 +7,7 @@ exports.authorize = async(req, res, next)=>{
 try {
   const {token} = req.cookies;
   const payload = await jwt.verify(token, process.env.JWT_SECRET);
-console.log(payload, "payload")
+
   const user = await userModel.findById(payload.userId);
   if(!user){
     throw new Unauthorized();
