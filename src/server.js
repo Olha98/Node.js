@@ -1,41 +1,46 @@
 const express = require("express");
-const cors = require("cors");
-const contactRouter = require("./contacts/contacts.router");
-
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../src/.env") });
+const cors = require("cors");
+const morgan = require("morgan");
+const contactsRouter = require("./contacts/contacts.routers");
+const AppError = require("./helpers/ErrApp");
+const errorController = require("./helpers/ErrController");
+require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
 
-class ContactsServer {
-  constructor() {
-    this.server = null;
-  }
-
+class CrudServer {
   start() {
     this.initServer();
     this.initMiddlewares();
     this.initRouters();
+    this.initErrorHandling();
     this.startListening();
   }
 
   initServer() {
-    this.server = express();
+    this.app = express();
   }
-
   initMiddlewares() {
-    this.server.use(express.json());
-    this.server.use(cors({ origin: "http://localhost:3000" }));
+    this.app.use(express.json());
+    this.app.use(cors({ origin: "http://localhost:3000" }));
+    this.app.use(morgan("combined"));
   }
 
   initRouters() {
-    this.server.use("/contacts", contactRouter);
+    this.app.use("/contacts", contactsRouter);
+  }
+
+  initErrorHandling() {
+    this.app.all("*", (req, res, next) => {
+      next(new AppError(`Can't fint ${req.originalUrl}`, 404));
+    });
+    this.app.use(errorController);
   }
 
   startListening() {
-    this.server.listen(process.env.PORT, () => {
-      console.log("Server started");
+    this.app.listen(process.env.PORT, () => {
+      console.log("Server started listening on port", process.env.PORT);
     });
   }
 }
 
-exports.ContactsServer = ContactsServer;
-exports.contactsServer = new ContactsServer();
+exports.crudServer = new CrudServer();
