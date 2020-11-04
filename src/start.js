@@ -1,3 +1,2 @@
-const {authServer} = require('../src/server');
-authServer.start()
-
+const { crudServer } = require("./server");
+crudServer.start();

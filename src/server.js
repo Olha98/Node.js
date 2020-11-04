@@ -1,19 +1,18 @@
-const express = require('express');
-const cors = require('cors');
-// const contactRouter = require('./contacts/contacts.router');
-const cookieParser = require('cookie-parser')
-const authRouter = require('./auth/auth.router');
-const usersRouter = require('./users/users.router');
-const mongoose = require('mongoose');
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const contactsRouter = require("./contacts/contacts.routers");
+const cookieParser = require("cookie-parser");
+const path = require("path")
+const mongoose = require("mongoose");
+const errorController = require("./helpers/errController");
+const AppError = require("./helpers/AppError");
+const authRouter = require("./auth/auth.routers");
+const userRouter = require("./users/users.router");
+const router = require("./router");
+require('dotenv').config({ path: path.join(__dirname, './.env') });
 
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
-
- class AuthServer {
-  constructor() {
-    this.server = null;
-  }
-
+class CrudServer {
   async start() {
     this.initServer();
     this.initMiddlewares();
@@ -24,19 +23,17 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
   }
 
   initServer() {
-    this.server = express();
+    this.app = express();
   }
-
   initMiddlewares() {
-    this.server.use(express.json());
-    this.server.use(cors({ origin: 'http://localhost:3000' }));
-    this.server.use(cookieParser())
+    this.app.use(express.json());
+    this.app.use(cors({ origin: "http://localhost:3000" }));
+    this.app.use(morgan("combined"));
+    this.app.use(cookieParser());
   }
 
   initRouters() {
-    // this.server.use('/contacts', contactRouter);
-    this.server.use('/auth', authRouter);
-    this.server.use('/users', usersRouter)
+    this.app.use("/api/", router);
   }
 
   async initDataBase() {
@@ -44,10 +41,10 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
       await mongoose.connect(process.env.MONGO_DB_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useFindAndModify: true,
         useCreateIndex: true,
-        useNewUrlParser: true
       });
-      console.log('Database has been started');
+      console.log("Database has been started");
     } catch (error) {
       console.log(error);
       process.exit(1);
@@ -55,18 +52,17 @@ require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
   }
 
   initErrorHandling() {
-    this.server.use((err, req, res, next) => {
-      return res.status(err.status || 500).send(err.message);
+    this.app.all("*", (req, res, next) => {
+      return next(new AppError(`Can't find ${req.originalUrl}`, 404));
     });
+    this.app.use(errorController);
   }
 
   startListening() {
-    this.server.listen(process.env.PORT, () => {
-      console.log('Server started');
+    this.app.listen(process.env.PORT, () => {
+      console.log("Server started listening on port", process.env.PORT);
     });
   }
-};
+}
 
-
-exports.authServer = new AuthServer();
-
+exports.crudServer = new CrudServer();
