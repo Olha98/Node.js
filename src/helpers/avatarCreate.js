@@ -3,7 +3,7 @@ const path = require("path");
 const avatar = new AvatarGenerator();
 const { v4: uuidv4 } = require("uuid");
 
-const variant = "feme";
+const variant = "female";
 
 exports.avatarCreate = async function avatarCreate() {
   const image = await avatar.generate("email@example.com", variant);

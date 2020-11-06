@@ -25,7 +25,7 @@ exports.createNewUser = async (req, res, next) => {
   const newUser = await UserModel.create({
     email,
     password: passwordHash,
-    avatarURL: avatarPath,
+    avatar: avatarPath,
   });
   res.status(201).json({
     status: "sucess",
