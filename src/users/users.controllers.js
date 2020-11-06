@@ -1,6 +1,7 @@
 const UserModel = require("../auth/user.model");
 const AppError = require("../helpers/AppError");
 
+
 exports.getCurrentUser = (req, res, next) => {
   try {
     res.status(200).json({
@@ -27,4 +28,24 @@ exports.deleteUser = async (req, res, next) => {
   await UserModel.findByIdAndDelete(id);
 
   return res.status(204).end();
+};
+
+exports.updateUserInfo = async (req, res, next) => {
+  const { user } = req;
+  const { file } = req;
+
+  const newImagePath = `http://localhost:3000/images/${file.filename}`;
+
+  const updatedImage = await UserModel.findByIdAndUpdate(
+    user._id,
+    {
+      avatarURL: newImagePath,
+    },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    avatarURL: updatedImage.avatarURL,
+  });
 };

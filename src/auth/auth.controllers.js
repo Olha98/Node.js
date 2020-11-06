@@ -2,9 +2,10 @@ const bcrypt = require("bcrypt");
 const UserModel = require("./user.model");
 const AppError = require("../helpers/AppError");
 const jwt = require("jsonwebtoken");
+const { avatarCreate } = require("../helpers/avatarCreate");
 const path = require("path");
 
-require('dotenv').config({ path: path.join(__dirname, '../src/.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../src/.env') });
 
 exports.createNewUser = async (req, res, next) => {
   const { email, password } = req.body;
@@ -18,12 +19,16 @@ exports.createNewUser = async (req, res, next) => {
     return next(new AppError("User with such email is exist", 409));
   }
 
+  const avatarName = await avatarCreate();
+  const avatarPath = `http://localhost:${process.env.PORT}/images/${avatarName}`;
+
   const newUser = await UserModel.create({
     email,
     password: passwordHash,
+    avatarURL: avatarPath,
   });
   res.status(201).json({
-    status: "suсcess",
+    status: "sucess",
     createdUser: {
       email: newUser.email,
       id: newUser._id,
@@ -49,7 +54,7 @@ exports.loginUser = async (req, res, next) => {
   });
 
   res.status(200).json({
-    status: "success",
+    status: "sucess",
     loginUser: {
       token: token,
       email: existUser.email,
