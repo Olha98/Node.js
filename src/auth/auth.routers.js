@@ -5,6 +5,7 @@ const { validate } = require("../helpers/validate");
 const { errCatch } = require("../helpers/ErrCatch");
 const AuthController = require("./auth.controllers");
 const { authorize } = require("../helpers/authorize");
+const { checkVerification } = require("../services/emailService");
 
 const registerScheme = Joi.object({
   email: Joi.string().email().required(),
@@ -28,5 +29,7 @@ authRouter.post(
   errCatch(authorize),
   errCatch(AuthController.logout)
 );
+
+authRouter.get("/verify/:verificationToken", errCatch(checkVerification));
 
 module.exports = authRouter;
